@@ -61,3 +61,36 @@ func FindFirstInList(path string, list []string) (string, error) {
 
 	return "", errors.New("none found")
 }
+
+func FindFileFromList(path string, list []string) chan string {
+	ch := make(chan string)
+
+	go func() {
+		defer close(ch)
+
+		path, err := filepath.Abs(path)
+		if err != nil {
+			return
+		}
+		st, err := os.Stat(path)
+		if err != nil {
+			return
+		}
+		if !st.IsDir() {
+			return
+		}
+
+		var res string
+		_ = filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+			for _, v := range list {
+				if strings.EqualFold(filepath.Base(path), v) {
+					res, _ = filepath.Abs(path)
+					ch <- res
+				}
+			}
+			return nil
+		})
+	}()
+
+	return ch
+}

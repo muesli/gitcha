@@ -61,3 +61,29 @@ func TestFindFirstInList(t *testing.T) {
 		}
 	}
 }
+
+func TestFindFileFromList(t *testing.T) {
+	tt := []struct {
+		path string
+		list []string
+		exp  string
+	}{
+		{"../", []string{"gitcha.go"}, "gitcha.go"},
+		{"../", []string{"gitcha_test.go"}, "gitcha_test.go"},
+	}
+
+	for _, test := range tt {
+		ch := FindFileFromList(test.path, test.list)
+
+		for v := range ch {
+			var err error
+			test.exp, err = filepath.Abs(test.exp)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if test.exp != v {
+				t.Errorf("Expected %v, got %v for %s", test.exp, v, test.path)
+			}
+		}
+	}
+}
