@@ -96,6 +96,9 @@ func FindFileFromList(path string, list []string) chan string {
 				if matched {
 					res, _ = filepath.Abs(path)
 					ch <- res
+
+					// only match each path once
+					continue
 				}
 			}
 			return nil
