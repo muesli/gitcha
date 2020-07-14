@@ -45,7 +45,12 @@ func FindFirstInList(path string, list []string) (string, error) {
 	var res string
 	_ = filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		for _, v := range list {
-			if strings.EqualFold(filepath.Base(path), v) {
+			matched := strings.EqualFold(filepath.Base(path), v)
+			if !matched {
+				matched, _ = filepath.Match(strings.ToLower(v), strings.ToLower(filepath.Base(path)))
+			}
+
+			if matched {
 				res, _ = filepath.Abs(path)
 
 				// abort filepath.Walk
@@ -83,7 +88,12 @@ func FindFileFromList(path string, list []string) chan string {
 		var res string
 		_ = filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 			for _, v := range list {
-				if strings.EqualFold(filepath.Base(path), v) {
+				matched := strings.EqualFold(filepath.Base(path), v)
+				if !matched {
+					matched, _ = filepath.Match(strings.ToLower(v), strings.ToLower(filepath.Base(path)))
+				}
+
+				if matched {
 					res, _ = filepath.Abs(path)
 					ch <- res
 				}

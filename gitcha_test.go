@@ -36,6 +36,9 @@ func TestFindFirstInList(t *testing.T) {
 	}{
 		{"../", []string{"gitcha.go"}, "gitcha.go", false},
 		{".", []string{"gitcha_test.go"}, "gitcha_test.go", false},
+		{".", []string{"README.MD"}, "README.md", false},
+		{".", []string{"*.md"}, "README.md", false},
+		{".", []string{"*.MD"}, "README.md", false},
 		{".", []string{"exist.not"}, "", true},
 	}
 
@@ -69,7 +72,10 @@ func TestFindFileFromList(t *testing.T) {
 		exp  string
 	}{
 		{"../", []string{"gitcha.go"}, "gitcha.go"},
-		{"../", []string{"gitcha_test.go"}, "gitcha_test.go"},
+		{".", []string{"gitcha_test.go"}, "gitcha_test.go"},
+		{".", []string{"README.MD"}, "README.md"},
+		{".", []string{"*.md"}, "README.md"},
+		{".", []string{"*.MD"}, "README.md"},
 	}
 
 	for _, test := range tt {
