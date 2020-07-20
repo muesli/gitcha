@@ -7,6 +7,11 @@ import (
 	"strings"
 )
 
+type SearchResult struct {
+	Path string
+	Info os.FileInfo
+}
+
 func IsPathInGit(path string) bool {
 	p, err := GitRepoForPath(path)
 	if err != nil {
@@ -74,8 +79,8 @@ func FindFirstInList(path string, list []string) (string, error) {
 	return "", errors.New("none found")
 }
 
-func FindFileFromList(path string, list []string) chan string {
-	ch := make(chan string)
+func FindFileFromList(path string, list []string) chan SearchResult {
+	ch := make(chan SearchResult)
 
 	go func() {
 		defer close(ch)
@@ -92,7 +97,6 @@ func FindFileFromList(path string, list []string) chan string {
 			return
 		}
 
-		var res string
 		_ = filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 			for _, v := range list {
 				matched := strings.EqualFold(filepath.Base(path), v)
@@ -101,8 +105,11 @@ func FindFileFromList(path string, list []string) chan string {
 				}
 
 				if matched {
-					res, _ = filepath.Abs(path)
-					ch <- res
+					res, _ := filepath.Abs(path)
+					ch <- SearchResult{
+						Path: res,
+						Info: info,
+					}
 
 					// only match each path once
 					continue

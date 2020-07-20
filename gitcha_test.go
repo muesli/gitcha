@@ -88,7 +88,7 @@ func TestFindFileFromList(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if test.exp != v {
+			if test.exp != v.Path {
 				t.Errorf("Expected %v, got %v for %s", test.exp, v, test.path)
 			}
 		}
