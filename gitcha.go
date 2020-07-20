@@ -7,25 +7,32 @@ import (
 	"strings"
 )
 
-func IsPathInGit(path string) (bool, error) {
-	absPath, err := filepath.Abs(path)
+func IsPathInGit(path string) bool {
+	p, err := GitRepoForPath(path)
 	if err != nil {
-		return false, err
+		return false
+	}
+
+	return len(p) > 0
+}
+
+func GitRepoForPath(path string) (string, error) {
+	dir, err := filepath.Abs(path)
+	if err != nil {
+		return "", err
 	}
 
 	for {
-		dir := filepath.Dir(absPath)
-
 		st, err := os.Stat(filepath.Join(dir, ".git"))
 		if err == nil && st.IsDir() {
-			return true, nil
+			return dir, nil
 		}
 
-		if dir == absPath {
+		if dir == filepath.Dir(dir) {
 			// reached root
-			return false, nil
+			return "", nil
 		}
-		absPath = dir
+		dir = filepath.Dir(dir)
 	}
 }
 
