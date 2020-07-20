@@ -5,18 +5,19 @@ import (
 	"testing"
 )
 
-func TestIsPathInGit(t *testing.T) {
+func TestGitRepoForPath(t *testing.T) {
+	abs, _ := filepath.Abs(".")
 	tt := []struct {
 		path string
-		exp  bool
+		exp  string
 	}{
-		{"/", false},
-		{".", false},
-		{"gitcha.go", true},
+		{"/", ""},
+		{".", abs},
+		{"gitcha.go", abs},
 	}
 
 	for _, test := range tt {
-		r, err := IsPathInGit(test.path)
+		r, err := GitRepoForPath(test.path)
 		if err != nil {
 			t.Error(err)
 		}
