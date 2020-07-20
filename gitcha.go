@@ -112,7 +112,7 @@ func FindFileFromList(path string, list []string) chan SearchResult {
 					}
 
 					// only match each path once
-					continue
+					return nil
 				}
 			}
 			return nil
