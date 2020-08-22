@@ -11,7 +11,7 @@ Go helpers to work with git repositories
 ## Examples
 
 ```go
-// returns the directory of the git repository path is a member of, or an error:
+// returns the directory of the git repository path is a member of:
 repo, err := gitcha.GitRepoForPath(path)
 
 // finds files from list in path. It respects all .gitignores it finds while
