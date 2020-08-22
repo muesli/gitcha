@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/denormal/go-gitignore"
+	ignore "github.com/sabhiram/go-gitignore"
 )
 
 type SearchResult struct {
@@ -99,17 +99,22 @@ func FindFileFromList(path string, list []string) chan SearchResult {
 			return
 		}
 
+		var lastGit string
+		var gi *ignore.GitIgnore
+
 		_ = filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 			git, _ := GitRepoForPath(path)
 			if git != "" && git != path {
-				gi, _ := gitignore.NewRepository(git)
-				if gi != nil {
-					if match := gi.Match(path); match != nil && match.Ignore() {
-						if info.IsDir() {
-							return filepath.SkipDir
-						}
-						return nil
+				if lastGit != git {
+					lastGit = git
+					gi, err = ignore.CompileIgnoreFile(filepath.Join(git, ".gitignore"))
+				}
+
+				if err == nil && gi != nil && gi.MatchesPath(path) {
+					if info.IsDir() {
+						return filepath.SkipDir
 					}
+					return nil
 				}
 			}
 
