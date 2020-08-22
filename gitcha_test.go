@@ -28,7 +28,39 @@ func TestGitRepoForPath(t *testing.T) {
 	}
 }
 
-func TestFindFirstInList(t *testing.T) {
+func TestFindFileFromList(t *testing.T) {
+	tt := []struct {
+		path string
+		list []string
+		exp  string
+	}{
+		{"../", []string{"gitcha.go"}, "gitcha.go"},
+		{".", []string{"gitcha_test.go"}, "gitcha_test.go"},
+		{".", []string{"README.MD"}, "README.md"},
+		{".", []string{"*.md"}, "README.md"},
+		{".", []string{"*.MD"}, "README.md"},
+	}
+
+	for _, test := range tt {
+		ch, err := FindFiles(test.path, test.list)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		for v := range ch {
+			var err error
+			test.exp, err = filepath.Abs(test.exp)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if test.exp != v.Path {
+				t.Errorf("Expected %v, got %v for %s", test.exp, v, test.path)
+			}
+		}
+	}
+}
+
+func TestFindFirstFile(t *testing.T) {
 	tt := []struct {
 		path   string
 		list   []string
@@ -40,11 +72,10 @@ func TestFindFirstInList(t *testing.T) {
 		{".", []string{"README.MD"}, "README.md", false},
 		{".", []string{"*.md"}, "README.md", false},
 		{".", []string{"*.MD"}, "README.md", false},
-		{".", []string{"exist.not"}, "", true},
 	}
 
 	for _, test := range tt {
-		r, err := FindFirstInList(test.path, test.list)
+		r, err := FindFirstFile(test.path, test.list)
 		if err != nil && !test.expErr {
 			t.Error(err)
 		}
@@ -60,37 +91,8 @@ func TestFindFirstInList(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if test.exp != r {
+		if test.exp != r.Path {
 			t.Errorf("Expected %v, got %v for %s", test.exp, r, test.path)
-		}
-	}
-}
-
-func TestFindFileFromList(t *testing.T) {
-	tt := []struct {
-		path string
-		list []string
-		exp  string
-	}{
-		{"../", []string{"gitcha.go"}, "gitcha.go"},
-		{".", []string{"gitcha_test.go"}, "gitcha_test.go"},
-		{".", []string{"README.MD"}, "README.md"},
-		{".", []string{"*.md"}, "README.md"},
-		{".", []string{"*.MD"}, "README.md"},
-	}
-
-	for _, test := range tt {
-		ch := FindFileFromList(test.path, test.list)
-
-		for v := range ch {
-			var err error
-			test.exp, err = filepath.Abs(test.exp)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if test.exp != v.Path {
-				t.Errorf("Expected %v, got %v for %s", test.exp, v, test.path)
-			}
 		}
 	}
 }
