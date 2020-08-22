@@ -8,19 +8,10 @@ import (
 	ignore "github.com/sabhiram/go-gitignore"
 )
 
+// SearchResult combines the absolute path of a file with a FileInfo struct.
 type SearchResult struct {
 	Path string
 	Info os.FileInfo
-}
-
-// IsPathInGit returns true when a path is part of a git repository.
-func IsPathInGit(path string) bool {
-	p, err := GitRepoForPath(path)
-	if err != nil {
-		return false
-	}
-
-	return len(p) > 0
 }
 
 // GitRepoForPath returns the directory of the git repository path is a member
@@ -45,6 +36,16 @@ func GitRepoForPath(path string) (string, error) {
 		// check parent dir
 		dir = filepath.Dir(dir)
 	}
+}
+
+// IsPathInGit returns true when a path is part of a git repository.
+func IsPathInGit(path string) bool {
+	p, err := GitRepoForPath(path)
+	if err != nil {
+		return false
+	}
+
+	return len(p) > 0
 }
 
 // FindFiles finds files from list in path. It respects all .gitignores it finds
