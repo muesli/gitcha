@@ -11,12 +11,14 @@ Go helpers to work with git repositories
 ## Examples
 
 ```go
+import "github.com/muesli/gitcha"
+
 // returns the directory of the git repository path is a member of:
 repo, err := gitcha.GitRepoForPath(path)
 
 // finds files from list in path. It respects all .gitignores it finds while
 // traversing paths:
-ch, err := FindFiles(path, []string{"*.md"})
+ch, err := gitcha.FindFiles(path, []string{"*.md"})
 
 for v := range ch {
     fmt.Println(v.Path)
