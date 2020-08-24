@@ -93,10 +93,12 @@ func FindFiles(path string, list []string) (chan SearchResult, error) {
 				}
 
 				if matched {
-					res, _ := filepath.Abs(path)
-					ch <- SearchResult{
-						Path: res,
-						Info: info,
+					res, err := filepath.Abs(path)
+					if err == nil {
+						ch <- SearchResult{
+							Path: res,
+							Info: info,
+						}
 					}
 
 					// only match each path once
