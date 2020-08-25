@@ -78,7 +78,7 @@ func FindFiles(path string, list []string) (chan SearchResult, error) {
 					gi, err = ignore.CompileIgnoreFile(filepath.Join(git, ".gitignore"))
 				}
 
-				if err == nil && gi != nil && gi.MatchesPath(path) {
+				if err == nil && gi != nil && gi.MatchesPath(strings.TrimPrefix(path, lastGit)) {
 					if info.IsDir() {
 						return filepath.SkipDir
 					}

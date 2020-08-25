@@ -28,7 +28,7 @@ func TestGitRepoForPath(t *testing.T) {
 	}
 }
 
-func TestFindFileFromList(t *testing.T) {
+func TestFindFiles(t *testing.T) {
 	tt := []struct {
 		path string
 		list []string
