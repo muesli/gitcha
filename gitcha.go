@@ -51,6 +51,30 @@ func IsPathInGit(path string) bool {
 // FindFiles finds files from list in path. It respects all .gitignores it finds
 // while traversing paths.
 func FindFiles(path string, list []string) (chan SearchResult, error) {
+	return findFiles(path, list, nil)
+}
+
+// FindFilesExcept finds files from a list in a path, excluding any matches in
+// a given set of ignore patterns. It also respects all .gitignores it finds
+// while traversing paths.
+func FindFilesExcept(path string, list, ignoreList []string) (chan SearchResult, error) {
+	return findFiles(path, list, ignoreList)
+}
+
+func FindFirstFile(path string, list []string) (SearchResult, error) {
+	ch, err := findFiles(path, list, nil)
+	if err != nil {
+		return SearchResult{}, err
+	}
+
+	for v := range ch {
+		return v, nil
+	}
+
+	return SearchResult{}, nil
+}
+
+func findFiles(path string, list, ignorePatterns []string) (chan SearchResult, error) {
 	path, err := filepath.Abs(path)
 	if err != nil {
 		return nil, err
@@ -86,6 +110,29 @@ func FindFiles(path string, list []string) (chan SearchResult, error) {
 				}
 			}
 
+			for _, pattern := range ignorePatterns {
+				// If there's no path separator in the pattern try to match
+				// against the directory we're currently walking.
+				if !strings.Contains(pattern, string(os.PathSeparator)) {
+					dir := filepath.Dir(path)
+					if dir == "." {
+						continue // path is empty
+					}
+					pattern = dir + string(os.PathSeparator) + pattern
+				}
+
+				matched, err := filepath.Match(pattern, path)
+				if err != nil {
+					continue
+				}
+				if matched && info.IsDir() {
+					return filepath.SkipDir
+				}
+				if matched {
+					return nil
+				}
+			}
+
 			for _, v := range list {
 				matched := strings.EqualFold(filepath.Base(path), v)
 				if !matched {
@@ -110,17 +157,4 @@ func FindFiles(path string, list []string) (chan SearchResult, error) {
 	}()
 
 	return ch, nil
-}
-
-func FindFirstFile(path string, list []string) (SearchResult, error) {
-	ch, err := FindFiles(path, list)
-	if err != nil {
-		return SearchResult{}, err
-	}
-
-	for v := range ch {
-		return v, nil
-	}
-
-	return SearchResult{}, nil
 }
