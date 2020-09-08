@@ -142,6 +142,8 @@ func FindFilesExcept(path string, list, ignorePatterns []string) (chan SearchRes
 	return ch, nil
 }
 
+// FindFirstFile looks for files from a list in a path, returning the first
+// match it finds. It respects all .gitignores it finds along the way.
 func FindFirstFile(path string, list []string) (SearchResult, error) {
 	ch, err := FindFilesExcept(path, list, nil)
 	if err != nil {
