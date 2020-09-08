@@ -118,7 +118,7 @@ func findFiles(path string, list, ignorePatterns []string) (chan SearchResult, e
 					if dir == "." {
 						continue // path is empty
 					}
-					pattern = dir + string(os.PathSeparator) + pattern
+					pattern = filepath.Join(dir, pattern)
 				}
 
 				matched, err := filepath.Match(pattern, path)
