@@ -51,30 +51,13 @@ func IsPathInGit(path string) bool {
 // FindFiles finds files from list in path. It respects all .gitignores it finds
 // while traversing paths.
 func FindFiles(path string, list []string) (chan SearchResult, error) {
-	return findFiles(path, list, nil)
+	return FindFilesExcept(path, list, nil)
 }
 
 // FindFilesExcept finds files from a list in a path, excluding any matches in
 // a given set of ignore patterns. It also respects all .gitignores it finds
 // while traversing paths.
-func FindFilesExcept(path string, list, ignoreList []string) (chan SearchResult, error) {
-	return findFiles(path, list, ignoreList)
-}
-
-func FindFirstFile(path string, list []string) (SearchResult, error) {
-	ch, err := findFiles(path, list, nil)
-	if err != nil {
-		return SearchResult{}, err
-	}
-
-	for v := range ch {
-		return v, nil
-	}
-
-	return SearchResult{}, nil
-}
-
-func findFiles(path string, list, ignorePatterns []string) (chan SearchResult, error) {
+func FindFilesExcept(path string, list, ignorePatterns []string) (chan SearchResult, error) {
 	path, err := filepath.Abs(path)
 	if err != nil {
 		return nil, err
@@ -157,4 +140,17 @@ func findFiles(path string, list, ignorePatterns []string) (chan SearchResult, e
 	}()
 
 	return ch, nil
+}
+
+func FindFirstFile(path string, list []string) (SearchResult, error) {
+	ch, err := FindFilesExcept(path, list, nil)
+	if err != nil {
+		return SearchResult{}, err
+	}
+
+	for v := range ch {
+		return v, nil
+	}
+
+	return SearchResult{}, nil
 }
