@@ -1,6 +1,8 @@
 package gitcha
 
 import (
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 )
@@ -29,6 +31,12 @@ func TestGitRepoForPath(t *testing.T) {
 }
 
 func TestFindFiles(t *testing.T) {
+	tlink, err := tempLink(".")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(tlink)
+
 	tt := []struct {
 		path string
 		list []string
@@ -39,6 +47,7 @@ func TestFindFiles(t *testing.T) {
 		{".", []string{"README.MD"}, "README.md"},
 		{".", []string{"*.md"}, "README.md"},
 		{".", []string{"*.MD"}, "README.md"},
+		{tlink, []string{"gitcha.go"}, "gitcha.go"},
 	}
 
 	for _, test := range tt {
@@ -95,4 +104,26 @@ func TestFindFirstFile(t *testing.T) {
 			t.Errorf("Expected %v, got %v for %s", test.exp, r, test.path)
 		}
 	}
+}
+
+// tempLink creates a temporary symbolic link pointing to "dest".
+func tempLink(dest string) (string, error) {
+	// Use tempfile just to create a name and remove it afterwards.
+	tmp, err := ioutil.TempFile("", "gitcha_test")
+	if err != nil {
+		return "", err
+	}
+	tmp.Close()
+	if err := os.Remove(tmp.Name()); err != nil {
+		return "", err
+	}
+
+	d, err := filepath.Abs(dest)
+	if err != nil {
+		return "", err
+	}
+	if err := os.Symlink(d, tmp.Name()); err != nil {
+		return "", err
+	}
+	return tmp.Name(), nil
 }
