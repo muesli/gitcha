@@ -62,6 +62,10 @@ func FindFilesExcept(path string, list, ignorePatterns []string) (chan SearchRes
 	if err != nil {
 		return nil, err
 	}
+	path, err = filepath.EvalSymlinks(path)
+	if err != nil {
+		return nil, err
+	}
 	st, err := os.Stat(path)
 	if err != nil {
 		return nil, err
