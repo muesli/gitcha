@@ -19,10 +19,17 @@ repo, err := gitcha.GitRepoForPath(path)
 // finds files from list in path. It respects all .gitignores it finds while
 // traversing paths:
 ch, err := gitcha.FindFiles(path, []string{"*.md"})
-
 for v := range ch {
     fmt.Println(v.Path)
 }
+
+// finds files, excluding any matches in a given set of ignore patterns:
+ch, err := gitcha.FindFilesExcept(path, []string{"*.md"}, []string{".*"})
+...
+
+// if you are only interested in the first match:
+result, err := gitcha.FindFirstFile(path, []string{"*.md"})
+...
 
 // just for convenience:
 ok := gitcha.IsPathInGit(path)
