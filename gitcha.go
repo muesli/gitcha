@@ -48,16 +48,47 @@ func IsPathInGit(path string) bool {
 	return len(p) > 0
 }
 
+// FindAllFiles finds all files from list in path. It does not respect any
+// gitignore files.
+func FindAllFiles(path string, list []string) (chan SearchResult, error) {
+	return findFiles(path, list, nil, false)
+}
+
+// FindAllFilesExcept finds all files from list in path. It does not respect any
+// gitignore files.
+func FindAllFilesExcept(path string, list, ignorePatterns []string) (chan SearchResult, error) {
+	return findFiles(path, list, ignorePatterns, false)
+}
+
 // FindFiles finds files from list in path. It respects all .gitignores it finds
 // while traversing paths.
 func FindFiles(path string, list []string) (chan SearchResult, error) {
-	return FindFilesExcept(path, list, nil)
+	return findFiles(path, list, nil, true)
 }
 
 // FindFilesExcept finds files from a list in a path, excluding any matches in
 // a given set of ignore patterns. It also respects all .gitignores it finds
 // while traversing paths.
 func FindFilesExcept(path string, list, ignorePatterns []string) (chan SearchResult, error) {
+	return findFiles(path, list, ignorePatterns, true)
+}
+
+// FindFirstFile looks for files from a list in a path, returning the first
+// match it finds. It respects all .gitignores it finds along the way.
+func FindFirstFile(path string, list []string) (SearchResult, error) {
+	ch, err := FindFilesExcept(path, list, nil)
+	if err != nil {
+		return SearchResult{}, err
+	}
+
+	for v := range ch {
+		return v, nil
+	}
+
+	return SearchResult{}, nil
+}
+
+func findFiles(path string, list, ignorePatterns []string, respectGitIgnore bool) (chan SearchResult, error) {
 	path, err := filepath.Abs(path)
 	if err != nil {
 		return nil, err
@@ -82,18 +113,20 @@ func FindFilesExcept(path string, list, ignorePatterns []string) (chan SearchRes
 		var gi *ignore.GitIgnore
 
 		_ = filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
-			git, _ := GitRepoForPath(path)
-			if git != "" && git != path {
-				if lastGit != git {
-					lastGit = git
-					gi, err = ignore.CompileIgnoreFile(filepath.Join(git, ".gitignore"))
-				}
-
-				if err == nil && gi != nil && gi.MatchesPath(strings.TrimPrefix(path, lastGit)) {
-					if info.IsDir() {
-						return filepath.SkipDir
+			if respectGitIgnore {
+				git, _ := GitRepoForPath(path)
+				if git != "" && git != path {
+					if lastGit != git {
+						lastGit = git
+						gi, err = ignore.CompileIgnoreFile(filepath.Join(git, ".gitignore"))
 					}
-					return nil
+
+					if err == nil && gi != nil && gi.MatchesPath(strings.TrimPrefix(path, lastGit)) {
+						if info.IsDir() {
+							return filepath.SkipDir
+						}
+						return nil
+					}
 				}
 			}
 
@@ -144,19 +177,4 @@ func FindFilesExcept(path string, list, ignorePatterns []string) (chan SearchRes
 	}()
 
 	return ch, nil
-}
-
-// FindFirstFile looks for files from a list in a path, returning the first
-// match it finds. It respects all .gitignores it finds along the way.
-func FindFirstFile(path string, list []string) (SearchResult, error) {
-	ch, err := FindFilesExcept(path, list, nil)
-	if err != nil {
-		return SearchResult{}, err
-	}
-
-	for v := range ch {
-		return v, nil
-	}
-
-	return SearchResult{}, nil
 }

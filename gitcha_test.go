@@ -30,6 +30,40 @@ func TestGitRepoForPath(t *testing.T) {
 	}
 }
 
+func TestFindAllFiles(t *testing.T) {
+	tt := []struct {
+		path string
+		list []string
+		exp  string
+	}{
+		{".", []string{"*.test"}, "ignore.test"},
+	}
+
+	for _, test := range tt {
+		_, err := os.Create(test.exp)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer os.Remove(test.exp)
+
+		ch, err := FindAllFiles(test.path, test.list)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		for v := range ch {
+			var err error
+			test.exp, err = filepath.Abs(test.exp)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if test.exp != v.Path {
+				t.Errorf("Expected %v, got %v for %s", test.exp, v, test.path)
+			}
+		}
+	}
+}
+
 func TestFindFiles(t *testing.T) {
 	tlink, err := tempLink(".")
 	if err != nil {
