@@ -3,7 +3,7 @@
 [![Latest Release](https://img.shields.io/github/release/muesli/gitcha.svg)](https://github.com/muesli/gitcha/releases)
 [![Build Status](https://github.com/muesli/gitcha/workflows/build/badge.svg)](https://github.com/muesli/gitcha/actions)
 [![Coverage Status](https://coveralls.io/repos/github/muesli/gitcha/badge.svg?branch=master)](https://coveralls.io/github/muesli/gitcha?branch=master)
-[![Go ReportCard](http://goreportcard.com/badge/muesli/gitcha)](http://goreportcard.com/report/muesli/gitcha)
+[![Go ReportCard](https://goreportcard.com/badge/muesli/gitcha)](https://goreportcard.com/report/muesli/gitcha)
 [![GoDoc](https://godoc.org/github.com/golang/gddo?status.svg)](https://pkg.go.dev/github.com/muesli/gitcha)
 
 Go helpers to work with git repositories
