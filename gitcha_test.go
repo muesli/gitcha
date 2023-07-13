@@ -3,6 +3,7 @@ package gitcha
 import (
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"testing"
 )
@@ -31,35 +32,47 @@ func TestGitRepoForPath(t *testing.T) {
 }
 
 func TestFindAllFiles(t *testing.T) {
+	tmp := t.TempDir()
+
+	gitignore, err := os.Create(path.Join(tmp, ".gitignore"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer gitignore.Close()
+	_, err = gitignore.WriteString("*.test")
+	if err != nil {
+		t.Fatal(err)
+	}
 	tt := []struct {
 		path string
 		list []string
 		exp  string
 	}{
-		{".", []string{"*.test"}, "ignore.test"},
+		{tmp, []string{"*.test"}, "ignore.test"},
 	}
 
 	for _, test := range tt {
-		_, err := os.Create(test.exp)
+		f, err := os.Create(filepath.Join(tmp, test.exp))
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer os.Remove(test.exp)
+		defer f.Close()
 
 		ch, err := FindAllFiles(test.path, test.list)
 		if err != nil {
 			t.Fatal(err)
 		}
 
+		var counter int
 		for v := range ch {
-			var err error
-			test.exp, err = filepath.Abs(test.exp)
-			if err != nil {
-				t.Fatal(err)
+			counter++
+			if test.exp != v.Info.Name() {
+				t.Errorf("Expected %v, got %v for %s", test.exp, v.Path, test.path)
 			}
-			if test.exp != v.Path {
-				t.Errorf("Expected %v, got %v for %s", test.exp, v, test.path)
-			}
+		}
+
+		if counter != 1 {
+			t.Errorf("Expected 1 file found, got %d for %s", counter, test.path)
 		}
 	}
 }
