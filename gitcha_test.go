@@ -3,7 +3,6 @@ package gitcha
 import (
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"testing"
 )
@@ -34,7 +33,7 @@ func TestGitRepoForPath(t *testing.T) {
 func TestFindAllFiles(t *testing.T) {
 	tmp := t.TempDir()
 
-	gitignore, err := os.Create(path.Join(tmp, ".gitignore"))
+	gitignore, err := os.Create(filepath.Join(tmp, ".gitignore"))
 	if err != nil {
 		t.Fatal(err)
 	}
